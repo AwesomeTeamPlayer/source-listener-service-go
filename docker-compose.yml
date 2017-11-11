@@ -1,0 +1,41 @@
+version: '2'
+
+services:
+  go-app:
+    image: golang:1.9
+    ports:
+      - "1234:1234"
+    volumes:
+       - /home/szymon/go:/go
+    command: /go/src/github.com/AwesomeTeamPlayer/source-listener-service-go/loop.sh
+    links:
+      - mysql
+      - rabbit
+    environment:
+      APP_PORT: 1234
+
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: testdb
+
+      AMQP_HOST: rabbit
+      AMQP_PORT: 5672
+      AMQP_USER: guest
+      AMQP_PASSWORD: guest
+      AMQP_EXCAHNGE_NAME: output
+      AMQP_QUEUE: input_queue
+
+  mysql:
+    image: mysql:8.0.3
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'
+      MYSQL_DATABASE: testdb
+
+  rabbit:
+    image: rabbitmq:3.6.12-management
+    ports:
+      - "15672:15672"
