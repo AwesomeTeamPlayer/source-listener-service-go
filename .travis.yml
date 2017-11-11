@@ -1,0 +1,19 @@
+language: go
+go: '1.9'
+
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: install dependencies
+      script: ./install-dependencies.sh
+
+    - stage: build and deploy
+      script:
+        - go build -o app github.com/AwesomeTeamPlayer/source-listener-service-go
+        - ls -lh
+        - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+        - docker build -t awesometeamplayer/source-listener-service-go:$TRAVIS_BRANCH .
+        - docker images
+        - docker push awesometeamplayer/source-listener-service-go
