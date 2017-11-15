@@ -1,4 +1,4 @@
-#source-listener-service-go
+# source-listener-service-go
 
 This service is responsible for:
 1) storing information about which client listens on changes on which object
@@ -36,20 +36,24 @@ Input data:
 ``` 
 
 The worker connect _AMQP_QUEUE_ queue and consume messages from it:
-1) Worker takes one message. The message has to have format:
-```json
-{
-  "ObjectType": "user",
-  "ObjectId": "123",
-  "data": {
-    // event details 
-  }
-} 
-```
-2) Worker takes all clients listen for this ObjectType and ObjectId. For each client:
-2.1) Worker connects to a queue assigned to the specific client.
-2.2) If the queue does not exist worker finish this loop and take next client.
-2.3) Otherwise the worker adds `"ClientId":"abc123defGHI"` to received message:
+1. Worker takes one message. The message has to have format:
+    ```json
+    {
+      "ObjectType": "user",
+      "ObjectId": "123",
+      "data": {
+        // event details 
+      }
+    } 
+    ```
+2. Worker takes all clients listen for this ObjectType and ObjectId. For each client:
+
+2.1. Worker connects to a queue assigned to the specific client.
+
+2.2. If the queue does not exist worker finish this loop and take next client.
+
+
+2.3. Otherwise the worker adds `"ClientId":"abc123defGHI"` to received message:
 ```json
 {
   "ClientId": "abc123defGHI",
@@ -60,7 +64,7 @@ The worker connect _AMQP_QUEUE_ queue and consume messages from it:
   }
 } 
 ```
-2.4) ... and pushes this message to client's queue.  
+2.4. ... and pushes this message to client's queue.  
 
 
 ## To build
