@@ -15,18 +15,31 @@ type ReceivedEvent struct {
 	ObjectId	string	`json:"objectId"`
 }
 
-func publishEvent(clientId *string, receivedEvent string) {
+func publishEvent(clientQueuePair *ClientQueuePair, receivedEvent string) {
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
 
-	var body string = "{\"clientId\":\"" + *clientId + "\", " + receivedEvent[1:]
+	var body = "{\"clientId\":\"" + clientQueuePair.clientId + "\", " + receivedEvent[1:]
+
+	q, err := ch.QueueDeclarePassive(
+		clientQueuePair.queueName, // name
+		false,   // durable
+		false,   // delete when unused
+		false,   // exclusive
+		false,   // no-wait
+		nil,     // arguments
+	)
+	if err != nil {
+		fmt.Println("Queue: " + clientQueuePair.queueName + " does not exist")
+		return
+	}
 
 	err = ch.Publish(
-		os.Getenv("AMQP_EXCAHNGE_NAME"),
-		"",
-		false,
-		false,
+		"",     // exchange
+		q.Name, // routing key
+		false,  // mandatory
+		false,  // immediate
 		amqp.Publishing {
 			ContentType: "application/json",
 			Body:        []byte(body),
@@ -71,10 +84,10 @@ func runWorker() {
 			event := ReceivedEvent{}
 			json.Unmarshal([]byte(d.Body), &event)
 
-			clientsIds := getClients(event.ObjectType, event.ObjectId)
+			clientQueuePairs := getClients(event.ObjectType, event.ObjectId)
 
-			for _, clientId := range clientsIds {
-				publishEvent(&clientId, string(d.Body))
+			for _, clientQueuePair := range clientQueuePairs {
+				publishEvent(&clientQueuePair, string(d.Body))
 			}
 
 			d.Ack(true)

@@ -24,15 +24,15 @@ func connect(host string, port int, user string, password string, database strin
 	return db
 }
 
-func insert(clientId string, objectType string, objectId string) {
-	stmtIns, err := connection.Prepare("INSERT INTO store (client_id, object_type, object_id) VALUES(?, ?, ?)")
+func insert(queueName string, clientId string, objectType string, objectId string) {
+	stmtIns, err := connection.Prepare("INSERT INTO store (queue_name, client_id, object_type, object_id) VALUES(?, ?, ?, ?)")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	defer stmtIns.Close()
-	_, err = stmtIns.Exec(clientId, objectType, objectId)
+	_, err = stmtIns.Exec(queueName, clientId, objectType, objectId)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -62,21 +62,26 @@ func deleteClient(clientId string) {
 	}
 }
 
-func getClients(objectType string, objectId string) []string {
-	rows, err := connection.Query("SELECT client_id FROM store WHERE object_type=? AND object_id=?", objectType, objectId)
+type ClientQueuePair struct {
+	clientId string
+	queueName string
+}
+
+func getClients(objectType string, objectId string) []ClientQueuePair {
+	rows, err := connection.Query("SELECT queue_name, client_id FROM store WHERE object_type=? AND object_id=?", objectType, objectId)
 	if err != nil {
 		fmt.Println(err)
-		return []string{}
+		return []ClientQueuePair{}
 	}
 
-	var clientsIds []string = []string{}
+	var clientQueuePairs []ClientQueuePair
 
 	for rows.Next() {
-		var clientId string
-		rows.Scan(&clientId)
+		var clientQueuePair ClientQueuePair
+		rows.Scan(&clientQueuePair.queueName, &clientQueuePair.clientId)
 
-		clientsIds = append(clientsIds, clientId)
+		clientQueuePairs = append(clientQueuePairs, clientQueuePair)
 	}
 
-	return clientsIds
+	return clientQueuePairs
 }

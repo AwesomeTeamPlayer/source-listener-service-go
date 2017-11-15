@@ -10,7 +10,14 @@ import (
 	"github.com/gorilla/rpc/json"
 	"log"
 )
-type Request struct {
+type RegisterClientRequest struct {
+	QueueName string
+	ClientId string
+	ObjectType string
+	ObjectId string
+}
+
+type UnregisterClientRequest struct {
 	ClientId string
 	ObjectType string
 	ObjectId string
@@ -22,17 +29,17 @@ type RemoveClientRequest struct {
 
 type App int
 
-func (t *App) RegisterClient (r *http.Request, request *Request, result *bool) error {
+func (t *App) RegisterClient (r *http.Request, request *RegisterClientRequest, result *bool) error {
 	fmt.Println("RegisterClient")
 
-	insert(request.ClientId, request.ObjectType, request.ObjectId)
+	insert(request.QueueName, request.ClientId, request.ObjectType, request.ObjectId)
 
 	fmt.Println("Client registered")
 	*result = true
 	return nil
 }
 
-func (t *App) UnregisterClient (r *http.Request, request *Request, result *bool) error {
+func (t *App) UnregisterClient (r *http.Request, request *UnregisterClientRequest, result *bool) error {
 	fmt.Println("UnregisterClient")
 
 	delete(request.ClientId, request.ObjectType, request.ObjectId)

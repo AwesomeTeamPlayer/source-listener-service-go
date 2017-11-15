@@ -24,7 +24,6 @@ services:
       AMQP_PORT: 5672
       AMQP_USER: guest
       AMQP_PASSWORD: guest
-      AMQP_EXCAHNGE_NAME: output
       AMQP_QUEUE: input_queue
 
   mysql:
